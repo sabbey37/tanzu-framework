@@ -17,10 +17,20 @@ const(
 	TKGAddonType = "tkg.tanzu.vmware.com/addon"
 
 	// TKGAddonType is the label associated with a TKG addon secret
+	// change to package-name for v1alpha3label
+	// what will happen to old v1alpha1 secrets?
+	// will mgmt cluster that we pull info from still be v1alpha1?
+	// patch CB CR for workload cluster
 	TKGAddonLabel = "tkg.tanzu.vmware.com/addon-name"
 
 	// PinnipedAddonLabel is the addon label for pinniped
 	PinnipedAddonLabel = "pinniped"
+
+	// PinnipedInfoConfigMapName is the name of the Pinniped Info Configmap
+	PinnipedInfoConfigMapName = "pinniped-info"
+
+	// KubePublicNamespace is the `kube-public` namespace
+	KubePublicNamespace = "kube-public"
 
 	// TKGManagementLabel is the label associated with a TKG management cluster
 	TKGManagementLabel = "cluster-role.tkg.tanzu.vmware.com/management"
@@ -30,4 +40,7 @@ const(
 
 	// TKGAddonTypeAnnotation is the addon type annotation
 	TKGAddonTypeAnnotation = "tkg.tanzu.vmware.com/addon-type"
+
+	// InfrastructureRefDocker is the Docker infrastructure
+	InfrastructureRefDocker = "DockerCluster"
 )

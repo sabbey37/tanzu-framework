@@ -334,6 +334,13 @@ identity_management_type: none
 	})
 
 	Context("pinniped-info configmap", func() {
+		configMap := &corev1.ConfigMap{
+			ObjectMeta: metav1.ObjectMeta{
+				Namespace: "kube-public",
+				Name:      "pinniped-info",
+			},
+		}
+
 		cluster2 := &clusterapiv1beta1.Cluster{
 			ObjectMeta: metav1.ObjectMeta{
 				Namespace: pinnipedNamespace,
@@ -366,14 +373,10 @@ identity_management_type: none
 			}
 		})
 		When("the configmap gets created", func() {
-			configMap := &corev1.ConfigMap{
-				ObjectMeta: metav1.ObjectMeta{
-					Namespace: "kube-public",
-					Name:      "pinniped-info",
-				},
-			}
+
 			BeforeEach(func() {
-				Expect(k8sClient.Create(ctx, configMap)).To(Succeed())
+				configMapCopy := configMap.DeepCopy()
+				Expect(k8sClient.Create(ctx, configMapCopy)).To(Succeed())
 			})
 
 			It("loops through all the addons secrets", func() {
@@ -411,15 +414,12 @@ identity_management_type: none
 		})
 		When("a configmap in a different namespace gets created", func() {
 			// TODO: Add info to CM and make sure it doesn't get propagated to secrets
-			configMap := &corev1.ConfigMap{
-				ObjectMeta: metav1.ObjectMeta{
-					Namespace: pinnipedNamespace,
-					Name:      "pinniped-info",
-				},
-			}
-
 			BeforeEach(func() {
-				Expect(k8sClient.Create(ctx, configMap)).To(Succeed())
+				configMapCopy := configMap.DeepCopy()
+				configMapCopy.Namespace = pinnipedNamespace
+				configMap.Data["issuer"] = "cats.dev"
+				configMap.Data["issuer_ca_bundle_data"] = "secret-blanket"
+				Expect(k8sClient.Create(ctx, configMapCopy)).To(Succeed())
 			})
 
 			It("does not update addon secrets", func() {
@@ -456,18 +456,17 @@ identity_management_type: none
 		})
 		When("a configmap with a different name gets created", func() {
 			// TODO: Add info to CM and make sure it doesn't get propagated to secrets
-			configMap := &corev1.ConfigMap{
-				ObjectMeta: metav1.ObjectMeta{
-					Namespace: pinnipedNamespace,
-					Name:      "kitties",
-				},
-			}
 
 			BeforeEach(func() {
-				Expect(k8sClient.Create(ctx, configMap)).To(Succeed())
+				configMapCopy := configMap.DeepCopy()
+				configMapCopy.Name = "kitties"
+				configMapCopy.Data = make(map[string]string)
+				configMapCopy.Data["issuer"] = "cats.dev"
+				configMapCopy.Data["issuer_ca_bundle_data"] = "secret-blanket"
+				Expect(k8sClient.Create(ctx, configMapCopy)).To(Succeed())
 			})
 
-			It("does not update addon secrets", func() {
+			FIt("does not update addon secrets", func() {
 				Eventually(func(g Gomega) {
 					wantSecretData := map[string][]byte{
 						"values.yaml": []byte(`#@data/values
